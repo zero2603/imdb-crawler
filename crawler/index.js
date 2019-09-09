@@ -183,7 +183,7 @@ exports.crawlMovies = async (pageToCrawl = 1, fromDate, toDate = null) => {
  */
 exports.crawlReviews = async (movieId) => {
     try {
-        const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
+        const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
         const page = await browser.newPage();
         await page.goto(`https://www.imdb.com/title/${movieId}/reviews?sort=submissionDate&dir=desc&ratingFilter=0`);
         await page.addScriptTag({ url: 'https://code.jquery.com/jquery-3.2.1.min.js' });
