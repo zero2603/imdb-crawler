@@ -119,7 +119,7 @@ cron.schedule('*/10 * * * *', () => {
 
         data = JSON.parse(data);
 
-        request(`https://lit-retreat-45329.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
+        request(`https://gentle-sands-96033.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
     });
 });
 
