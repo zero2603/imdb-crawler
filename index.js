@@ -119,7 +119,7 @@ cron.schedule('*/10 * * * *', () => {
 
         data = JSON.parse(data);
 
-        request(`https://salty-refuge-82481.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
+        request(`https://lit-retreat-45329.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
     });
 });
 
