@@ -182,62 +182,66 @@ exports.crawlMovies = async (pageToCrawl = 1, fromDate, toDate = null) => {
  * Crawl reviews of specific movie
  */
 exports.crawlReviews = async (movieId) => {
-    try {
-        const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
-        const page = await browser.newPage();
-        await page.goto(`https://www.imdb.com/title/${movieId}/reviews?sort=submissionDate&dir=desc&ratingFilter=0`);
-        await page.addScriptTag({ url: 'https://code.jquery.com/jquery-3.2.1.min.js' });
-        
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.goto(`https://www.imdb.com/title/${movieId}/reviews?sort=submissionDate&dir=desc&ratingFilter=0`);
+    await page.addScriptTag({ url: 'https://code.jquery.com/jquery-3.2.1.min.js' });
 
-        var reviewsInDB = await Review.find({ movie_imdb_id: movieId }).sort({ created_at: -1 }).exec();
-        var lastestReview = reviewsInDB[0];
-        var lastestCrawlTimestamp = lastestReview ? lastestReview.created_at : '01/01/1970';
-        var crawledPage = Math.ceil(reviewsInDB.length / 25);
-        var totalReviews = await page.$eval(".lister .header span", el => el.innerText);
-        totalReviews = totalReviews.split(" ")[0].replace('.', '').replace(',', '');
-        console.log(totalReviews);
-        var totalPages = Math.ceil(parseInt(totalReviews) / 25);
-        var pageToCrawl = crawledPage ? (totalPages - crawledPage + 1) : totalPages;
 
-        if (pageToCrawl > 1) {
-            let temp = pageToCrawl - 1;
+    var reviewsInDB = await Review.find({ movie_imdb_id: movieId }).sort({ created_at: -1 }).exec();
+    var lastestReview = reviewsInDB[0];
+    var lastestCrawlTimestamp = lastestReview ? lastestReview.created_at : '01/01/1970';
+    var crawledPage = Math.ceil(reviewsInDB.length / 25);
+    var totalReviews = await page.$eval(".lister .header span", el => el.innerText);
+    totalReviews = totalReviews.split(" ")[0].replace('.', '').replace(',', '');
+    console.log(totalReviews);
+    var totalPages = Math.ceil(parseInt(totalReviews) / 25);
+    var pageToCrawl = crawledPage ? (totalPages - crawledPage + 1) : totalPages;
 
-            (async function loopClick(pageNumber) {
-                await page.click('#load-more-trigger');
+    if (pageToCrawl > 1) {
+        let temp = pageToCrawl - 1;
 
-                setTimeout(function () {
-                    if (--pageNumber) {
-                        loopClick(pageNumber);
-                    }
-                }, 2500);
-            })(temp);
-        }
+        (async function loopClick(pageNumber) {
+            await page.click('#load-more-trigger');
 
-        setTimeout(async () => {
-            var userReviews = await page.evaluate((lastestCrawlTimestamp) => {
-                const $ = window.$;
-
-                var reviews = [];
-
-                $('.imdb-user-review').each(function (index, element) {
-                    var reviewDate = $($(element).find('.review-date')[0]).text();
-                    if (new Date(reviewDate) > new Date(lastestCrawlTimestamp)) {
-                        reviews.push({
-                            user_id: $($($(element).find('.display-name-link')[0]).find('a')[0]).attr('href').substr(6, 11),
-                            rating: $($($(element).find('.rating-other-user-rating')[0]).find('span')[0]).text() || 0,
-                            content: $($(element).find('.title')[0]).text()
-                        })
-                    }
-                });
-
-                return reviews;
-            })
-
-            await browser.close();
-            console.log(`Crawl ${movieId} done!`);
-        }, 2700 * pageToCrawl);
-    } catch (err) {
-        console.log(err);
+            setTimeout(function () {
+                if (--pageNumber) {
+                    loopClick(pageNumber);
+                }
+            }, 2500);
+        })(temp);
     }
+
+    setTimeout(async () => {
+        var userReviews = await page.evaluate((movieId, lastestCrawlTimestamp) => {
+            const $ = window.$;
+
+            var reviews = [];
+
+            $('.imdb-user-review').each(function (index, element) {
+                var reviewDate = $($(element).find('.review-date')[0]).text();
+                if (new Date(reviewDate) > new Date(lastestCrawlTimestamp)) {
+                    reviews.push({
+                        movie_imdb_id: movieId,
+                        user_id: $($($(element).find('.display-name-link')[0]).find('a')[0]).attr('href').substr(6, 11),
+                        rating: $($($(element).find('.rating-other-user-rating')[0]).find('span')[0]).text() || 0,
+                        content: $($(element).find('.title')[0]).text()
+                    })
+                }
+            });
+
+            return reviews;
+        }, movieId, lastestCrawlTimestamp);
+        
+        Review.create(userReviews, {ordered: false}, (err, res) => {
+            console.log(err);
+            console.log(res);
+        });
+
+        await browser.close();
+        console.log(`Crawl ${movieId} done!`);
+
+        
+    }, 2700 * pageToCrawl);
 
 }

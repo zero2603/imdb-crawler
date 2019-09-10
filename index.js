@@ -113,15 +113,20 @@ app.get('/log/activity', (req, res) => {
     });
 });
 
-cron.schedule('*/10 * * * *', () => {
-    fs.readFile("./activity", "utf8", function (err, data) {
-        if (err) throw err;
+app.get('/test', (req, res) => {
+    res.send(crawler.crawlReviews('tt2935510'));
+})
 
-        data = JSON.parse(data);
 
-        request(`https://gentle-sands-96033.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
-    });
-});
+// cron.schedule('*/10 * * * *', () => {
+//     fs.readFile("./activity", "utf8", function (err, data) {
+//         if (err) throw err;
+
+//         data = JSON.parse(data);
+
+//         request(`https://gentle-sands-96033.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
+//     });
+// });
 
 
 app.listen(process.env.PORT || 3000, () => console.log('App is running!'));
