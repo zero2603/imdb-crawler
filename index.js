@@ -64,24 +64,18 @@ app.get('/crawl/movies', (req, res) => {
 app.get('/crawl/reviews', async (req, res) => {
     var currentPage = parseInt(req.query.page) ? parseInt(req.query.page) : 1;
 
-    // fs.readFile('activity', 'utf8', (err, data) => {
-    //     if (err) res.send(err);
+    fs.readFile('activity', 'utf8', (err, data) => {
+        if (err) res.send(err);
 
-    //     data = JSON.parse(data);
-    //     if (data.crawledPage < currentPage) {
-    //         fs.writeFileSync('activity', JSON.stringify({ crawledPage: currentPage }));
-    //     }
-    // });
+        data = JSON.parse(data);
+        if (data.crawledPage < currentPage) {
+            fs.writeFileSync('activity', JSON.stringify({ crawledPage: currentPage }));
+        }
+    });
 
-    // var movies = await Movie.find({}).sort({releaseDate: -1}).skip(15 * (currentPage - 1)).limit(15);
-    // var processes = movies.map(movie => {
-    //     return crawler.crawlReviews(movie.imdb_id);
-    // });
-
-    // Promise.all(processes);
-
-    ['tt2935510', 'tt7370952'].map(movie => {
-        crawler.crawlReviews(movie);
+    var movies = await Movie.find({}).sort({releaseDate: -1}).skip(15 * (currentPage - 1)).limit(15);
+    movies.map(movie => {
+        crawler.crawlReviews(movie.imdb_id);
     });
 
     res.send({ ok: 1 });
@@ -122,17 +116,15 @@ app.get('/test', (req, res) => {
 })
 
 
-// setInterval(() => {
-//     fs.readFile("./activity", "utf8", function (err, data) {
-//         if (err) throw err;
+cron.schedule('*/10 * * * *', () => {
+    fs.readFile("./activity", "utf8", function (err, data) {
+        if (err) throw err;
 
-//         data = JSON.parse(data);
-//         crawler.crawlReviews('tt2935510');
-//         crawler.crawlReviews('tt7370952');
+        data = JSON.parse(data);
 
-//         // request(`https://gentle-sands-96033.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
-//     });
-// }, 10*60*1000)
+        request(`https://nameless-beach-72924.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
+    });
+});
 
 
 app.listen(process.env.PORT || 3000, () => console.log('App is running!'));
