@@ -73,7 +73,7 @@ app.get('/crawl/reviews', async (req, res) => {
         }
     });
 
-    var movies = await Movie.find({}).sort({releaseDate: -1}).skip(15 * (currentPage - 1)).limit(15);
+    var movies = await Movie.find({}).sort({releaseDate: -1}).skip(8 * (currentPage - 1)).limit(8);
     movies.map(movie => {
         crawler.crawlReviews(movie.imdb_id);
     });
@@ -116,7 +116,7 @@ app.get('/test', (req, res) => {
 })
 
 
-cron.schedule('*/10 * * * *', () => {
+cron.schedule('*/5 * * * *', () => {
     fs.readFile("./activity", "utf8", function (err, data) {
         if (err) throw err;
 
