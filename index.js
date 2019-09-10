@@ -79,7 +79,7 @@ app.get('/crawl/reviews', async (req, res) => {
         }
     });
 
-    var movies = await Movie.find({}).sort({releaseDate: -1}).skip(8 * (currentPage - 1)).limit(8);
+    var movies = await Movie.find({}).sort({releaseDate: -1}).skip(5 * (currentPage - 1)).limit(5);
     movies.map(movie => {
         crawler.crawlReviews(movie.imdb_id);
     });
