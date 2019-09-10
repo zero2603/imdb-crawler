@@ -5,14 +5,20 @@ const bodyParser = require('body-parser');
 var cron = require('node-cron');
 const mongoose = require('mongoose');
 var request = require('request-promise');
+const EventEmitter = require('events');
+const emitter = new EventEmitter();
 
 // models
 var Movie = require('./models/movie');
 var Review = require('./models/review');
 
+// max events listeners
+emitter.setMaxListeners(25);
+
 var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
 
 // connect to db
 const uri = "mongodb+srv://root:12345az@cluster0-gakrk.gcp.mongodb.net/test?retryWrites=true&w=majority";
