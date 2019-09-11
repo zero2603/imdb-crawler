@@ -235,7 +235,7 @@ exports.crawlReviews = async (movieId) => {
         
         Review.create(userReviews, {ordered: false}, (err, res) => {
             console.log(err);
-            console.log(res);
+            // console.log(res);
         });
 
         await browser.close();
