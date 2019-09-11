@@ -21,8 +21,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 
 // connect to db
-const uri = "mongodb+srv://root:12345az@cluster0-gakrk.gcp.mongodb.net/test?retryWrites=true&w=majority";
-// const uri = "mongodb://localhost:27017/imdb";
+// const uri = "mongodb+srv://root:12345az@cluster0-gakrk.gcp.mongodb.net/test?retryWrites=true&w=majority";
+const uri = "mongodb://localhost:27017/imdb";
 mongoose.connect(uri, { useNewUrlParser: true }).then(() => {
     console.log("Connected to Mongo")
 }, err => {
@@ -79,7 +79,7 @@ app.get('/crawl/reviews', async (req, res) => {
         }
     });
 
-    var movies = await Movie.find({}).sort({releaseDate: -1}).skip(5 * (currentPage - 1)).limit(5);
+    var movies = await Movie.find({}).sort({releaseDate: 1}).skip(10 * (currentPage - 1)).limit(10);
     movies.map(movie => {
         crawler.crawlReviews(movie.imdb_id);
     });
@@ -128,7 +128,7 @@ cron.schedule('*/5 * * * *', () => {
 
         data = JSON.parse(data);
 
-        request(`https://gentle-sands-96033.herokuapp.com/crawl/reviews?page=${data.crawledPage + 1}`);
+        request(`http://localhost:3000/crawl/reviews?page=${data.crawledPage + 1}`);
     });
 });
 
