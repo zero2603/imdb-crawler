@@ -128,7 +128,7 @@ cron.schedule('*/5 * * * *', () => {
 
         data = JSON.parse(data);
 
-        request(`http://localhost:3000/crawl/reviews?page=${data.crawledPage + 1}`);
+        request(`http://165.22.251.154:3000/crawl/reviews?page=${data.crawledPage + 1}`);
     });
 });
 
