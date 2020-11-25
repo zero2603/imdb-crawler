@@ -38,26 +38,26 @@ const init = async () => {
 
     await server.register(require('inert'));
 
-    // cronjob to remove pin on job
-    await server.register({
-        plugin: HapiCron,
-        options: {
-            jobs: [
-                {
-                    name: 'job',
-                    time: '0 */5 * * * *',
-                    timezone: 'Asia/Ho_Chi_Minh',
-                    request: {
-                        method: 'GET',
-                        url: '/crawl/reviews'
-                    },
-                    onComplete: (res) => {
-                        console.log(res);
-                    }
-                },
-            ],
-        }
-    });
+    // // cronjob to remove pin on job
+    // await server.register({
+    //     plugin: HapiCron,
+    //     options: {
+    //         jobs: [
+    //             {
+    //                 name: 'job',
+    //                 time: '0 */5 * * * *',
+    //                 timezone: 'Asia/Ho_Chi_Minh',
+    //                 request: {
+    //                     method: 'GET',
+    //                     url: '/crawl/reviews'
+    //                 },
+    //                 onComplete: (res) => {
+    //                     console.log(res);
+    //                 }
+    //             },
+    //         ],
+    //     }
+    // });
 
     await server.start();
     console.log(`Server running at: ${server.info.uri}`);

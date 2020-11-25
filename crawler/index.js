@@ -91,93 +91,6 @@ exports.crawlMovies = async (pageToCrawl = 1, fromDate, toDate = null) => {
     })(pageToCrawl);
 }
 
-// /**
-//  * Crawl reviews of specific movie
-//  */
-// exports.crawlReviews = async (movieId) => {
-//     // find the last crawl time and number of crawled page
-//     var reviews = await Review.find({movie_imdb_id: movieId}).sort({created_at: -1}).exec();
-//     var lastestReview = reviews[0];
-//     var lastestCrawlTimestamp = lastestReview ? lastestReview.created_at : '01/01/1970';
-//     var crawledPage = Math.ceil(reviews.length / 25);
-
-//     console.log(lastestCrawlTimestamp, reviews.length, crawledPage);
-
-//     var ph = await phantom.create();
-//     var page = await ph.createPage();
-
-//     await page.open(`https://www.imdb.com/title/${movieId}/reviews?sort=submissionDate&dir=desc&ratingFilter=0`).then(async status => {
-//         await page.evaluate(function (crawledPage) {
-//             var totalReviews = parseInt($(".lister .header span").first().text().split(" ")[0].replace('.', '').replace(',', ''));
-//             // var totalPages = Math.ceil(totalReviews / 25);
-//             // var pageToCrawl = crawledPage ? (totalPages - crawledPage + 1) : totalPages;
-//             var pageToCrawl = Math.ceil(totalReviews / 25);
-
-//             if (pageToCrawl > 1) {
-//                 var temp = pageToCrawl;
-//                 var i = 0;
-
-//                 (function loopClick(pages) {
-//                     document.getElementById('load-more-trigger').click();
-//                     i++;
-
-//                     setTimeout(function () {
-//                         if (--pages) {
-//                             loopClick(pages);
-//                         }
-//                     }, 3000);
-//                 })(temp);
-//             }
-
-//             return pageToCrawl;
-//         }, crawledPage).then(function (pageToCrawl) {
-//             console.log(pageToCrawl)
-//             if(pageToCrawl > 0) {
-//                 setTimeout(async function () {
-//                     await page.evaluate(function (lastestCrawlTimestamp) {
-//                         var reviews = [];
-
-//                         $('.imdb-user-review').each(function (index, element) {
-//                             var reviewDate = $($(element).find('.review-date')[0]).text();
-//                             if(new Date(reviewDate) > new Date(lastestCrawlTimestamp)) {
-//                                 reviews.push({
-//                                     user_id: $($($(element).find('.display-name-link')[0]).find('a')[0]).attr('href').substr(6, 11),
-//                                     rating: $($($(element).find('.rating-other-user-rating')[0]).find('span')[0]).text() || 0,
-//                                     content: $($(element).find('.title')[0]).text()
-//                                 })
-//                             }
-//                         });
-
-//                         return reviews;
-//                     }, lastestCrawlTimestamp).then(function (reviews) {
-//                         console.log(reviews.length);
-//                         if(reviews.length) {
-//                             reviews.forEach(review => {
-//                                 review.movie_imdb_id = movieId;
-//                             });
-//                             // fs.writeFileSync(`./data/reviews/reviews_${movieId}.json`, JSON.stringify(reviews), (err, res) => {
-//                             //     console.log(err);
-//                             //     console.log(res);
-//                             // });
-//                             Review.insertMany(reviews, {ordered: true}, (err, res) => {
-//                                 if(err) errorLogger.error(err);
-//                                 console.log('===================== Done');
-//                             })
-//                         }
-//                     })
-//                 }, 3500 * pageToCrawl);
-//             }
-
-//             // ph.exit();
-//             // return { status: 1 }
-//         }).catch(function (err) {
-//             errorLogger.error(err);
-//         })
-//     }).catch(function (err) {
-//         errorLogger.error(err);
-//     });
-// }
-
 /**
  * Crawl reviews of specific movie
  */
@@ -232,8 +145,8 @@ exports.crawlReviews = async (movieId) => {
 
             return reviews;
         }, movieId, lastestCrawlTimestamp);
-        
-        Review.create(userReviews, {ordered: false}, (err, res) => {
+
+        Review.create(userReviews, { ordered: false }, (err, res) => {
             console.log(err);
             // console.log(res);
         });
@@ -241,7 +154,6 @@ exports.crawlReviews = async (movieId) => {
         await browser.close();
         console.log(`Crawl ${movieId} done!`);
 
-        
-    }, 2700 * pageToCrawl);
 
+    }, 2700 * pageToCrawl);
 }
